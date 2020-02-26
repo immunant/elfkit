@@ -294,6 +294,7 @@ impl SymbolicLinker {
                         },
                     }
                 },
+                symbol::SymbolSectionIndex::XIndex => unimplemented!(),
             }
         }
         Ok(locations)

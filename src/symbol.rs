@@ -8,10 +8,11 @@ use std::fmt;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SymbolSectionIndex {
-    Section(u16), // 1-6551
+    Section(u16), // 1-0xfff0
     Undefined,    // 0
-    Absolute,     // 65521,
-    Common,       // 6552,
+    Absolute,     // 0xfff1,
+    Common,       // 0xfff2,
+    XIndex,       // 0xffff,
 }
 impl Default for SymbolSectionIndex {
     fn default() -> SymbolSectionIndex {
@@ -47,6 +48,7 @@ impl fmt::Debug for Symbol {
                    SymbolSectionIndex::Absolute => String::from("ABS"),
                    SymbolSectionIndex::Common => String::from("COM"),
                    SymbolSectionIndex::Section(i) => format!("{}", i),
+                   SymbolSectionIndex::XIndex => unimplemented!(),
                },
                String::from_utf8_lossy(&self.name)
               )
@@ -70,9 +72,10 @@ impl Symbol {
 
         let shndx = match shndx {
             0 => SymbolSectionIndex::Undefined,
-            65521 => SymbolSectionIndex::Absolute,
-            65522 => SymbolSectionIndex::Common,
-            _ if shndx > 0 && shndx < 6552 => SymbolSectionIndex::Section(shndx),
+            0xfff1 => SymbolSectionIndex::Absolute,
+            0xfff2 => SymbolSectionIndex::Common,
+            0xffff => SymbolSectionIndex::XIndex,
+            _ if shndx > 0 && shndx < 0xfff1 => SymbolSectionIndex::Section(shndx),
             _ => return Err(Error::InvalidSymbolShndx(String::from_utf8_lossy(&name).into_owned(), shndx)),
         };
 
@@ -180,8 +183,9 @@ impl Symbol {
         let shndx = match self.shndx {
             SymbolSectionIndex::Section(i) => i,
             SymbolSectionIndex::Undefined => 0,
-            SymbolSectionIndex::Absolute => 65521,
-            SymbolSectionIndex::Common => 65522,
+            SymbolSectionIndex::Absolute => 0xfff1,
+            SymbolSectionIndex::Common => 0xfff2,
+            SymbolSectionIndex::XIndex => 0xffff,
         };
 
         elf_write_u32!(eh, io, self._name)?;
