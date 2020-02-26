@@ -75,7 +75,7 @@ impl Symbol {
             0xfff1 => SymbolSectionIndex::Absolute,
             0xfff2 => SymbolSectionIndex::Common,
             0xffff => SymbolSectionIndex::XIndex,
-            _ if shndx > 0 && shndx < 0xfff1 => SymbolSectionIndex::Section(shndx),
+            _ if shndx > 0 && shndx <= 0xfff0 => SymbolSectionIndex::Section(shndx),
             _ => return Err(Error::InvalidSymbolShndx(String::from_utf8_lossy(&name).into_owned(), shndx)),
         };
 
